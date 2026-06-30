@@ -79,94 +79,9 @@ export default function App() {
     }
   }
 
+  // --- WORKSPACE UI (Logged In) ---
   if (token) {
     return (
-      <div className="h-screen bg-gray-950 text-gray-100 flex flex-col overflow-hidden">
-        <header className="bg-gray-900 border-b border-gray-800 p-4 flex justify-between items-center shrink-0">
-          <div className="flex items-center gap-3">
-            <Code2 className="text-blue-500" />
-            <h1 className="text-xl font-bold tracking-tight">Cloud Editor</h1>
-            
-            <select 
-              value={language} 
-              onChange={handleLanguageChange}
-              className="ml-4 bg-gray-950 border border-gray-700 text-sm rounded-md px-3 py-1.5 focus:outline-none focus:border-blue-500"
-            >
-              <option value="python">Python 3</option>
-              <option value="cpp">C++ (g++)</option>
-            </select>
-          </div>
-
-          <div className="flex items-center gap-4">
-            <button 
-              onClick={handleRunCode}
-              disabled={isExecuting}
-              className="bg-green-600 hover:bg-green-700 disabled:bg-green-800 text-white font-medium px-4 py-1.5 rounded transition flex items-center gap-2"
-            >
-              {isExecuting ? <Loader2 size={16} className="animate-spin" /> : <Play size={16} />}
-              {isExecuting ? 'Running...' : 'Run Code'}
-            </button>
-            <button 
-              onClick={handleLogout}
-              className="text-zinc-500 hover:text-red-400 transition-colors"
-              title="Sign Out"
-            >
-              <LogOut size={18} />
-            </button>
-          </div>
-        </header>
-
-        <main className="flex-1 flex flex-col lg:flex-row min-h-0">
-          <div className="flex-1 border-r border-gray-800 relative">
-            <Editor
-              height="100%"
-              language={language}
-              theme="vs-dark"
-              value={code}
-              onChange={(value) => setCode(value || '')}
-              options={{
-                minimap: { enabled: false },
-                fontSize: 15,
-                fontFamily: 'monospace',
-                padding: { top: 16 },
-                scrollBeyondLastLine: false,
-                smoothScrolling: true,
-              }}
-            />
-          </div>
-
-          <div className="w-full lg:w-1/3 bg-[#1e1e1e] flex flex-col min-h-0 shrink-0 border-l border-gray-800">
-            <div className="flex flex-col h-1/2 border-b border-gray-800">
-              <div className="bg-gray-900 px-4 py-2 flex items-center gap-2 shrink-0 border-b border-gray-800">
-                <Keyboard size={16} className="text-gray-400" />
-                <span className="text-sm font-medium text-gray-300">Input (stdin)</span>
-              </div>
-              <textarea
-                value={stdin}
-                onChange={(e) => setStdin(e.target.value)}
-                placeholder="Type inputs here before running the code..."
-                className="w-full flex-1 bg-gray-950 p-4 font-mono text-sm text-gray-300 resize-none focus:outline-none p-4"
-              />
-            </div>
-
-            <div className="flex flex-col h-1/2 min-h-0">
-              <div className="bg-gray-900 px-4 py-2 flex items-center gap-2 shrink-0 border-b border-gray-800">
-                <Terminal size={16} className="text-gray-400" />
-                <span className="text-sm font-medium text-gray-300">Terminal Output</span>
-              </div>
-              <div className="p-4 flex-1 overflow-auto bg-gray-950">
-                <pre className="font-mono text-sm text-green-400 whitespace-pre-wrap break-words">
-                  {output}
-                </pre>
-              </div>
-            </div>
-          </div>
-        </main>
-      </div>
-    )
-  }
-
-  return (
       <div className="h-screen bg-[#09090b] text-zinc-300 flex flex-col overflow-hidden font-sans selection:bg-indigo-500/30">
         
         {/* Classy Glassmorphism Header */}
@@ -176,7 +91,7 @@ export default function App() {
               <Code2 size={20} className="text-indigo-400" />
             </div>
             <h1 className="text-lg font-semibold tracking-wide text-zinc-100">
-              Nova Editor {/* <-- CHANGE YOUR APP NAME HERE */}
+              Nova Editor
             </h1>
             
             <div className="h-4 w-px bg-white/10 mx-3"></div> {/* Elegant divider */}
@@ -218,7 +133,7 @@ export default function App() {
             <Editor
               height="100%"
               language={language}
-              theme="vs-dark" // Note: You can change this to 'light' if you want a bright theme!
+              theme="vs-dark"
               value={code}
               onChange={(value) => setCode(value || '')}
               options={{
@@ -260,8 +175,76 @@ export default function App() {
               </div>
             </div>
           </div>
-
         </main>
       </div>
     )
   }
+
+  // --- LOGIN UI (Logged Out) ---
+  return (
+    <div className="min-h-screen bg-[#09090b] flex items-center justify-center p-4 font-sans selection:bg-indigo-500/30">
+      <div className="max-w-md w-full bg-zinc-900/50 backdrop-blur-md rounded-2xl border border-white/5 p-8 shadow-2xl">
+        <div className="text-center space-y-3 mb-8">
+          <div className="bg-indigo-500/10 p-3 rounded-xl border border-indigo-500/20 inline-block">
+            <Code2 size={32} className="text-indigo-400" />
+          </div>
+          <h2 className="text-2xl font-semibold text-zinc-100 tracking-wide">
+            {isLogin ? 'Welcome Back' : 'Create Account'}
+          </h2>
+          <p className="text-sm text-zinc-400">
+            {isLogin ? 'Enter your credentials to access your workspace' : 'Sign up to start running code in the cloud'}
+          </p>
+        </div>
+
+        {authError && (
+          <div className="bg-red-500/10 border border-red-500/20 text-red-400 text-sm p-3 rounded-lg mb-6 text-center">
+            {authError}
+          </div>
+        )}
+
+        <form onSubmit={handleAuth} className="space-y-5">
+          <div className="space-y-1.5">
+            <label className="block text-xs font-semibold tracking-wider text-zinc-500 uppercase">Email</label>
+            <input 
+              type="email" 
+              required
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              className="w-full bg-black/40 border border-white/5 rounded-lg px-4 py-2.5 text-zinc-200 focus:outline-none focus:border-indigo-500/50 focus:ring-1 focus:ring-indigo-500/50 transition-all placeholder:text-zinc-700"
+              placeholder="developer@example.com"
+            />
+          </div>
+          <div className="space-y-1.5">
+            <label className="block text-xs font-semibold tracking-wider text-zinc-500 uppercase">Password</label>
+            <input 
+              type="password" 
+              required
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              className="w-full bg-black/40 border border-white/5 rounded-lg px-4 py-2.5 text-zinc-200 focus:outline-none focus:border-indigo-500/50 focus:ring-1 focus:ring-indigo-500/50 transition-all placeholder:text-zinc-700"
+              placeholder="••••••••"
+            />
+          </div>
+
+          <button 
+            type="submit" 
+            className="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-medium py-2.5 rounded-lg transition-colors flex justify-center items-center gap-2 shadow-lg shadow-indigo-500/20 mt-2"
+          >
+            {isLogin ? <><LogIn size={18} /> Sign In</> : <><UserPlus size={18} /> Register</>}
+          </button>
+        </form>
+
+        <div className="text-center text-sm text-zinc-500 mt-6 border-t border-white/5 pt-6">
+          {isLogin ? "Don't have an account? " : "Already have an account? "}
+          <button 
+            type="button"
+            onClick={() => { setIsLogin(!isLogin); setAuthError(''); }}
+            className="text-indigo-400 hover:text-indigo-300 font-medium transition-colors"
+          >
+            {isLogin ? 'Sign up' : 'Log in'}
+          </button>
+        </div>
+      </div>
+    </div>
+  )
+}
