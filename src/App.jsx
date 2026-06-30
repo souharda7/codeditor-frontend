@@ -20,7 +20,7 @@ export default function App() {
   const [resetMessage, setResetMessage] = useState('')
 
   const [language, setLanguage] = useState(localStorage.getItem('codeditor-lang') || 'python')
-  
+
   const [code, setCode] = useState(() => {
     const initialLang = localStorage.getItem('codeditor-lang') || 'python'
     const savedCode = localStorage.getItem(`codeditor-code-${initialLang}`)
@@ -50,25 +50,25 @@ export default function App() {
       }
 
       if (isCmdOrCtrl && e.key === 's') {
-        e.preventDefault() 
-        
+        e.preventDefault()
+
         localStorage.setItem(`codeditor-code-${language}`, code)
         localStorage.setItem('codeditor-stdin', stdin)
         localStorage.setItem('codeditor-lang', language)
-        
+
         setOutput((prev) => `[System] Workspace saved locally at ${new Date().toLocaleTimeString()}\n\n` + prev)
       }
     }
 
     window.addEventListener('keydown', handleKeyDown)
-    
+
     return () => window.removeEventListener('keydown', handleKeyDown)
-  }, [code, language, stdin]) 
+  }, [code, language, stdin])
 
   const handleAuth = async (e) => {
     e.preventDefault()
     setAuthError('')
-    
+
     try {
       const endpoint = isLogin ? '/login' : '/register'
       const response = await axios.post(endpoint, { email, password })
@@ -121,14 +121,14 @@ export default function App() {
 
   const handleLanguageChange = (e) => {
     const newLang = e.target.value
-    
+
     localStorage.setItem(`codeditor-code-${language}`, code)
 
     setLanguage(newLang)
     localStorage.setItem('codeditor-lang', newLang)
 
     const savedCode = localStorage.getItem(`codeditor-code-${newLang}`)
-    
+
     if (savedCode) setCode(savedCode)
     else setCode(newLang === 'python' ? defaultPython : defaultCpp)
   }
@@ -159,7 +159,7 @@ export default function App() {
   if (token) {
     return (
       <div className="h-screen bg-[#09090b] text-zinc-300 flex flex-col overflow-hidden font-sans selection:bg-indigo-500/30">
-        
+
         {/* Classy Glassmorphism Header */}
         <header className="bg-black/20 backdrop-blur-md border-b border-white/5 px-6 py-4 flex justify-between items-center shrink-0 z-10">
           <div className="flex items-center gap-3">
@@ -169,11 +169,11 @@ export default function App() {
             <h1 className="text-lg font-semibold tracking-wide text-zinc-100">
               CodeditoR
             </h1>
-            
+
             <div className="h-4 w-px bg-white/10 mx-3"></div> {/* Elegant divider */}
-            
-            <select 
-              value={language} 
+
+            <select
+              value={language}
               onChange={handleLanguageChange}
               className="bg-transparent text-sm text-zinc-400 hover:text-zinc-200 cursor-pointer focus:outline-none transition-colors"
             >
@@ -183,15 +183,16 @@ export default function App() {
           </div>
 
           <div className="flex items-center gap-5">
-            <button 
+            <button
               onClick={handleRunCode}
               disabled={isExecuting}
+              title="Run Code"
               className="bg-zinc-100 hover:bg-white text-zinc-900 disabled:bg-zinc-800 disabled:text-zinc-500 font-medium px-5 py-1.5 rounded-full shadow-sm transition-all flex items-center gap-2 text-sm"
             >
               {isExecuting ? <Loader2 size={16} className="animate-spin" /> : <Play size={14} className="fill-current" />}
               {isExecuting ? 'Executing...' : 'Run'}
             </button>
-            <button 
+            <button
               onClick={handleLogout}
               className="text-zinc-500 hover:text-red-400 transition-colors"
               title="Sign Out"
@@ -203,7 +204,7 @@ export default function App() {
 
         {/* Main Split Interface */}
         <main className="flex-1 flex flex-col lg:flex-row min-h-0">
-          
+
           {/* Left Pane: Monaco Editor */}
           <div className="flex-1 relative bg-[#09090b]">
             <Editor
@@ -212,6 +213,31 @@ export default function App() {
               theme="vs-dark"
               value={code}
               onChange={(value) => setCode(value || '')}
+              onMount={(editor, monaco) => {
+                // Shortcut for Ctrl + Enter (Run Code)
+                editor.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.Enter, () => {
+                  // Trigger the hidden run button dynamically
+                  const runBtn = document.querySelector('button[title="Run Code"]');
+                  if (runBtn && !runBtn.disabled) {
+                    runBtn.click();
+                  } else {
+                    // Fallback if title is just "Run"
+                    document.querySelector('button')?.parentElement?.querySelector('button')?.click();
+                  }
+                });
+
+                // Shortcut for Ctrl + S (Save Code)
+                editor.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.KeyS, () => {
+                  // Trigger standard browser save event so our window listener catches it
+                  const event = new KeyboardEvent('keydown', {
+                    key: 's',
+                    ctrlKey: true,
+                    metaKey: true,
+                    bubbles: true
+                  });
+                  window.dispatchEvent(event);
+                });
+              }}
               options={{
                 minimap: { enabled: false },
                 fontSize: 14,
@@ -281,18 +307,18 @@ export default function App() {
                 cloud workspace.
               </span>
             </h2>
-            
+
             <div className="space-y-6 mt-8">
               <div className="flex items-center gap-4 text-zinc-400">
-                <div className="bg-white/5 p-2 rounded-md"><Terminal size={20} className="text-cyan-400"/></div>
+                <div className="bg-white/5 p-2 rounded-md"><Terminal size={20} className="text-cyan-400" /></div>
                 <p className="text-sm">Isolated cloud containers for secure execution.</p>
               </div>
               <div className="flex items-center gap-4 text-zinc-400">
-                <div className="bg-white/5 p-2 rounded-md"><Play size={20} className="text-indigo-400"/></div>
+                <div className="bg-white/5 p-2 rounded-md"><Play size={20} className="text-indigo-400" /></div>
                 <p className="text-sm">Real-time compilation for C++ and Python.</p>
               </div>
               <div className="flex items-center gap-4 text-zinc-400">
-                <div className="bg-white/5 p-2 rounded-md"><Keyboard size={20} className="text-emerald-400"/></div>
+                <div className="bg-white/5 p-2 rounded-md"><Keyboard size={20} className="text-emerald-400" /></div>
                 <p className="text-sm">Full standard I/O support for complex algorithms.</p>
               </div>
             </div>
@@ -318,7 +344,7 @@ export default function App() {
 
           {authError && (
             <div className="bg-red-500/10 border border-red-500/20 text-red-400 text-sm p-4 rounded-lg flex items-center gap-3">
-               <div className="w-1.5 h-1.5 rounded-full bg-red-400"></div>
+              <div className="w-1.5 h-1.5 rounded-full bg-red-400"></div>
               {authError}
             </div>
           )}
@@ -329,8 +355,8 @@ export default function App() {
             <form onSubmit={handleResetPassword} className="space-y-5">
               <div className="space-y-2">
                 <label className="block text-sm font-medium text-zinc-300">Enter New Password</label>
-                <input 
-                  type="password" 
+                <input
+                  type="password"
                   required
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
@@ -349,8 +375,8 @@ export default function App() {
               {resetMessage && <div className="text-emerald-400 text-sm p-4 bg-emerald-400/10 rounded-lg">{resetMessage}</div>}
               <div className="space-y-2">
                 <label className="block text-sm font-medium text-zinc-300">Email address</label>
-                <input 
-                  type="email" 
+                <input
+                  type="email"
                   required
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
@@ -371,8 +397,8 @@ export default function App() {
             <form onSubmit={handleAuth} className="space-y-5">
               <div className="space-y-2">
                 <label className="block text-sm font-medium text-zinc-300">Email address</label>
-                <input 
-                  type="email" 
+                <input
+                  type="email"
                   required
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
@@ -384,17 +410,17 @@ export default function App() {
                 <div className="flex justify-between items-center">
                   <label className="block text-sm font-medium text-zinc-300">Password</label>
                   {isLogin && (
-                    <button 
-                      type="button" 
-                      onClick={() => {setIsForgotPassword(true); setAuthError(''); setResetMessage('');}} 
+                    <button
+                      type="button"
+                      onClick={() => { setIsForgotPassword(true); setAuthError(''); setResetMessage(''); }}
                       className="text-xs text-indigo-400 hover:text-indigo-300 transition-colors"
                     >
                       Forgot password?
                     </button>
                   )}
                 </div>
-                <input 
-                  type="password" 
+                <input
+                  type="password"
                   required
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
@@ -411,7 +437,7 @@ export default function App() {
 
           <div className="text-center text-sm text-zinc-500 pt-4">
             {isLogin ? "Don't have an account? " : "Already have an account? "}
-            <button 
+            <button
               type="button"
               onClick={() => { setIsLogin(!isLogin); setAuthError(''); setEmail(''); setPassword(''); }}
               className="text-white hover:text-indigo-300 font-medium transition-colors underline underline-offset-4 decoration-white/20"
