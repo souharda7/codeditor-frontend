@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import axios from 'axios'
 import { Terminal, Code2, LogIn, UserPlus, Play, Loader2, LogOut, Keyboard } from 'lucide-react'
 import Editor from '@monaco-editor/react'
@@ -12,11 +12,25 @@ export default function App() {
   const [password, setPassword] = useState('')
   const [authError, setAuthError] = useState('')
 
+  const [isForgotPassword, setIsForgotPassword] = useState(false)
+  const [resetToken, setResetToken] = useState(null)
+  const [resetMessage, setResetMessage] = useState('')
+
   const [language, setLanguage] = useState('python')
   const [code, setCode] = useState('name = input("Enter name: ")\nprint(f"Hello, {name}!")')
   const [stdin, setStdin] = useState('')
   const [output, setOutput] = useState('')
   const [isExecuting, setIsExecuting] = useState(false)
+
+  useEffect(() => {
+    const urlParams = new URLSearchParams(window.location.search)
+    const tokenFromUrl = urlParams.get('reset_token')
+    if (tokenFromUrl) {
+      setResetToken(tokenFromUrl)
+      // Clear the token from the URL bar so it looks clean
+      window.history.replaceState({}, document.title, "/")
+    }
+  }, [])
 
   const handleAuth = async (e) => {
     e.preventDefault()
@@ -37,6 +51,32 @@ export default function App() {
       }
     } catch (err) {
       setAuthError(err.response?.data?.detail || "Authentication failed")
+    }
+  }
+
+  const handleForgotPassword = async (e) => {
+    e.preventDefault()
+    setAuthError('')
+    setResetMessage('')
+    try {
+      await axios.post('/forgot-password', { email })
+      setResetMessage("If an account exists, a reset link has been sent to your email.")
+    } catch (err) {
+      setAuthError("Failed to process request.")
+    }
+  }
+
+  const handleResetPassword = async (e) => {
+    e.preventDefault()
+    setAuthError('')
+    try {
+      await axios.post('/reset-password', { token: resetToken, new_password: password })
+      alert("Password reset successful! Please log in with your new password.")
+      setResetToken(null)
+      setIsLogin(true)
+      setPassword('')
+    } catch (err) {
+      setAuthError(err.response?.data?.detail || "Failed to reset password. Link may be expired.")
     }
   }
 
@@ -247,40 +287,91 @@ export default function App() {
             </div>
           )}
 
-          <form onSubmit={handleAuth} className="space-y-5">
-            <div className="space-y-2">
-              <label className="block text-sm font-medium text-zinc-300">Email address</label>
-              <input 
-                type="email" 
-                required
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                className="w-full bg-zinc-950/50 border border-white/10 rounded-lg px-4 py-3 text-zinc-100 focus:outline-none focus:border-indigo-500/50 focus:ring-1 focus:ring-indigo-500/50 transition-all placeholder:text-zinc-600"
-                placeholder="name@domain.com"
-              />
-            </div>
-            <div className="space-y-2">
-              <div className="flex justify-between items-center">
-                <label className="block text-sm font-medium text-zinc-300">Password</label>
-                {isLogin && <button type="button" className="text-xs text-indigo-400 hover:text-indigo-300 transition-colors">Forgot password?</button>}
+          {/* THE DYNAMIC AUTH FORMS */}
+          {resetToken ? (
+            /* --- 1. SET NEW PASSWORD SCREEN --- */
+            <form onSubmit={handleResetPassword} className="space-y-5">
+              <div className="space-y-2">
+                <label className="block text-sm font-medium text-zinc-300">Enter New Password</label>
+                <input 
+                  type="password" 
+                  required
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  className="w-full bg-zinc-950/50 border border-white/10 rounded-lg px-4 py-3 text-zinc-100 focus:outline-none focus:border-indigo-500/50"
+                  placeholder="••••••••"
+                />
               </div>
-              <input 
-                type="password" 
-                required
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                className="w-full bg-zinc-950/50 border border-white/10 rounded-lg px-4 py-3 text-zinc-100 focus:outline-none focus:border-indigo-500/50 focus:ring-1 focus:ring-indigo-500/50 transition-all placeholder:text-zinc-600"
-                placeholder="••••••••"
-              />
-            </div>
+              <button type="submit" className="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-semibold py-3 rounded-lg mt-4">
+                Update Password
+              </button>
+            </form>
 
-            <button 
-              type="submit" 
-              className="w-full bg-zinc-100 hover:bg-white text-zinc-900 font-semibold py-3 rounded-lg transition-all flex justify-center items-center gap-2 mt-4"
-            >
-              {isLogin ? 'Sign In' : 'Create Account'}
-            </button>
-          </form>
+          ) : isForgotPassword ? (
+            /* --- 2. REQUEST RESET LINK SCREEN --- */
+            <form onSubmit={handleForgotPassword} className="space-y-5">
+              {resetMessage && <div className="text-emerald-400 text-sm p-4 bg-emerald-400/10 rounded-lg">{resetMessage}</div>}
+              <div className="space-y-2">
+                <label className="block text-sm font-medium text-zinc-300">Email address</label>
+                <input 
+                  type="email" 
+                  required
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  className="w-full bg-zinc-950/50 border border-white/10 rounded-lg px-4 py-3 text-zinc-100 focus:outline-none focus:border-indigo-500/50"
+                  placeholder="name@domain.com"
+                />
+              </div>
+              <button type="submit" className="w-full bg-zinc-100 hover:bg-white text-zinc-900 font-semibold py-3 rounded-lg mt-4">
+                Send Reset Link
+              </button>
+              <button type="button" onClick={() => setIsForgotPassword(false)} className="w-full text-zinc-400 hover:text-white text-sm mt-2">
+                Back to Login
+              </button>
+            </form>
+
+          ) : (
+            /* --- 3. STANDARD LOGIN/REGISTER SCREEN --- */
+            <form onSubmit={handleAuth} className="space-y-5">
+              <div className="space-y-2">
+                <label className="block text-sm font-medium text-zinc-300">Email address</label>
+                <input 
+                  type="email" 
+                  required
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  className="w-full bg-zinc-950/50 border border-white/10 rounded-lg px-4 py-3 text-zinc-100 focus:outline-none focus:border-indigo-500/50"
+                  placeholder="name@domain.com"
+                />
+              </div>
+              <div className="space-y-2">
+                <div className="flex justify-between items-center">
+                  <label className="block text-sm font-medium text-zinc-300">Password</label>
+                  {isLogin && (
+                    <button 
+                      type="button" 
+                      onClick={() => {setIsForgotPassword(true); setAuthError(''); setResetMessage('');}} 
+                      className="text-xs text-indigo-400 hover:text-indigo-300 transition-colors"
+                    >
+                      Forgot password?
+                    </button>
+                  )}
+                </div>
+                <input 
+                  type="password" 
+                  required
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  className="w-full bg-zinc-950/50 border border-white/10 rounded-lg px-4 py-3 text-zinc-100 focus:outline-none focus:border-indigo-500/50"
+                  placeholder="••••••••"
+                />
+              </div>
+
+              <button type="submit" className="w-full bg-zinc-100 hover:bg-white text-zinc-900 font-semibold py-3 rounded-lg mt-4">
+                {isLogin ? 'Sign In' : 'Create Account'}
+              </button>
+            </form>
+          )}
 
           <div className="text-center text-sm text-zinc-500 pt-4">
             {isLogin ? "Don't have an account? " : "Already have an account? "}
