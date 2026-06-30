@@ -91,7 +91,7 @@ export default function App() {
               <Code2 size={20} className="text-indigo-400" />
             </div>
             <h1 className="text-lg font-semibold tracking-wide text-zinc-100">
-              Nova Editor
+              CodeditoR
             </h1>
             
             <div className="h-4 w-px bg-white/10 mx-3"></div> {/* Elegant divider */}
@@ -182,67 +182,116 @@ export default function App() {
 
   // --- LOGIN UI (Logged Out) ---
   return (
-    <div className="min-h-screen bg-[#09090b] flex items-center justify-center p-4 font-sans selection:bg-indigo-500/30">
-      <div className="max-w-md w-full bg-zinc-900/50 backdrop-blur-md rounded-2xl border border-white/5 p-8 shadow-2xl">
-        <div className="text-center space-y-3 mb-8">
-          <div className="bg-indigo-500/10 p-3 rounded-xl border border-indigo-500/20 inline-block">
-            <Code2 size={32} className="text-indigo-400" />
-          </div>
-          <h2 className="text-2xl font-semibold text-zinc-100 tracking-wide">
-            {isLogin ? 'Welcome Back' : 'Create Account'}
-          </h2>
-          <p className="text-sm text-zinc-400">
-            {isLogin ? 'Enter your credentials to access your workspace' : 'Sign up to start running code in the cloud'}
-          </p>
+    <div className="min-h-screen bg-[#09090b] flex font-sans selection:bg-indigo-500/30">
+      {/* Left Side - Branding & Features (Hidden on mobile) */}
+      <div className="hidden lg:flex flex-col justify-between w-1/2 p-12 bg-zinc-950 border-r border-white/5 relative overflow-hidden">
+        {/* Decorative background glow */}
+        <div className="absolute top-0 left-0 w-full h-full overflow-hidden pointer-events-none">
+          <div className="absolute -top-[20%] -left-[10%] w-[70%] h-[70%] rounded-full bg-indigo-500/10 blur-[120px]"></div>
         </div>
 
-        {authError && (
-          <div className="bg-red-500/10 border border-red-500/20 text-red-400 text-sm p-3 rounded-lg mb-6 text-center">
-            {authError}
-          </div>
-        )}
-
-        <form onSubmit={handleAuth} className="space-y-5">
-          <div className="space-y-1.5">
-            <label className="block text-xs font-semibold tracking-wider text-zinc-500 uppercase">Email</label>
-            <input 
-              type="email" 
-              required
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              className="w-full bg-black/40 border border-white/5 rounded-lg px-4 py-2.5 text-zinc-200 focus:outline-none focus:border-indigo-500/50 focus:ring-1 focus:ring-indigo-500/50 transition-all placeholder:text-zinc-700"
-              placeholder="developer@example.com"
-            />
-          </div>
-          <div className="space-y-1.5">
-            <label className="block text-xs font-semibold tracking-wider text-zinc-500 uppercase">Password</label>
-            <input 
-              type="password" 
-              required
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              className="w-full bg-black/40 border border-white/5 rounded-lg px-4 py-2.5 text-zinc-200 focus:outline-none focus:border-indigo-500/50 focus:ring-1 focus:ring-indigo-500/50 transition-all placeholder:text-zinc-700"
-              placeholder="••••••••"
-            />
+        <div className="relative z-10">
+          <div className="flex items-center gap-3 mb-16">
+            <div className="bg-indigo-500/10 p-2 rounded-lg border border-indigo-500/20">
+              <Code2 size={24} className="text-indigo-400" />
+            </div>
+            <h1 className="text-2xl font-bold tracking-wide text-zinc-100">CodeditoR</h1>
           </div>
 
-          <button 
-            type="submit" 
-            className="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-medium py-2.5 rounded-lg transition-colors flex justify-center items-center gap-2 shadow-lg shadow-indigo-500/20 mt-2"
-          >
-            {isLogin ? <><LogIn size={18} /> Sign In</> : <><UserPlus size={18} /> Register</>}
-          </button>
-        </form>
+          <div className="space-y-8">
+            <h2 className="text-4xl font-bold text-zinc-100 leading-tight">
+              Your high-performance <br />
+              <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 to-cyan-400">
+                cloud workspace.
+              </span>
+            </h2>
+            
+            <div className="space-y-6 mt-8">
+              <div className="flex items-center gap-4 text-zinc-400">
+                <div className="bg-white/5 p-2 rounded-md"><Terminal size={20} className="text-cyan-400"/></div>
+                <p className="text-sm">Isolated cloud containers for secure execution.</p>
+              </div>
+              <div className="flex items-center gap-4 text-zinc-400">
+                <div className="bg-white/5 p-2 rounded-md"><Play size={20} className="text-indigo-400"/></div>
+                <p className="text-sm">Real-time compilation for C++ and Python.</p>
+              </div>
+              <div className="flex items-center gap-4 text-zinc-400">
+                <div className="bg-white/5 p-2 rounded-md"><Keyboard size={20} className="text-emerald-400"/></div>
+                <p className="text-sm">Full standard I/O support for complex algorithms.</p>
+              </div>
+            </div>
+          </div>
+        </div>
 
-        <div className="text-center text-sm text-zinc-500 mt-6 border-t border-white/5 pt-6">
-          {isLogin ? "Don't have an account? " : "Already have an account? "}
-          <button 
-            type="button"
-            onClick={() => { setIsLogin(!isLogin); setAuthError(''); }}
-            className="text-indigo-400 hover:text-indigo-300 font-medium transition-colors"
-          >
-            {isLogin ? 'Sign up' : 'Log in'}
-          </button>
+        <div className="relative z-10 text-xs text-zinc-600 font-mono">
+          System Status: All Systems Operational • Region: Global Edge
+        </div>
+      </div>
+
+      {/* Right Side - Auth Form */}
+      <div className="w-full lg:w-1/2 flex items-center justify-center p-8 relative">
+        <div className="max-w-md w-full space-y-8">
+          <div className="text-center lg:text-left space-y-2">
+            <h2 className="text-3xl font-semibold text-zinc-100 tracking-tight">
+              {isLogin ? 'Sign in to CodeditoR' : 'Create your account'}
+            </h2>
+            <p className="text-zinc-400 text-sm">
+              {isLogin ? 'Welcome back! Please enter your details.' : 'Join developers building in the cloud.'}
+            </p>
+          </div>
+
+          {authError && (
+            <div className="bg-red-500/10 border border-red-500/20 text-red-400 text-sm p-4 rounded-lg flex items-center gap-3">
+               <div className="w-1.5 h-1.5 rounded-full bg-red-400"></div>
+              {authError}
+            </div>
+          )}
+
+          <form onSubmit={handleAuth} className="space-y-5">
+            <div className="space-y-2">
+              <label className="block text-sm font-medium text-zinc-300">Email address</label>
+              <input 
+                type="email" 
+                required
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                className="w-full bg-zinc-950/50 border border-white/10 rounded-lg px-4 py-3 text-zinc-100 focus:outline-none focus:border-indigo-500/50 focus:ring-1 focus:ring-indigo-500/50 transition-all placeholder:text-zinc-600"
+                placeholder="name@domain.com"
+              />
+            </div>
+            <div className="space-y-2">
+              <div className="flex justify-between items-center">
+                <label className="block text-sm font-medium text-zinc-300">Password</label>
+                {isLogin && <button type="button" className="text-xs text-indigo-400 hover:text-indigo-300 transition-colors">Forgot password?</button>}
+              </div>
+              <input 
+                type="password" 
+                required
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                className="w-full bg-zinc-950/50 border border-white/10 rounded-lg px-4 py-3 text-zinc-100 focus:outline-none focus:border-indigo-500/50 focus:ring-1 focus:ring-indigo-500/50 transition-all placeholder:text-zinc-600"
+                placeholder="••••••••"
+              />
+            </div>
+
+            <button 
+              type="submit" 
+              className="w-full bg-zinc-100 hover:bg-white text-zinc-900 font-semibold py-3 rounded-lg transition-all flex justify-center items-center gap-2 mt-4"
+            >
+              {isLogin ? 'Sign In' : 'Create Account'}
+            </button>
+          </form>
+
+          <div className="text-center text-sm text-zinc-500 pt-4">
+            {isLogin ? "Don't have an account? " : "Already have an account? "}
+            <button 
+              type="button"
+              onClick={() => { setIsLogin(!isLogin); setAuthError(''); setEmail(''); setPassword(''); }}
+              className="text-white hover:text-indigo-300 font-medium transition-colors underline underline-offset-4 decoration-white/20"
+            >
+              {isLogin ? 'Sign up' : 'Log in'}
+            </button>
+          </div>
         </div>
       </div>
     </div>
