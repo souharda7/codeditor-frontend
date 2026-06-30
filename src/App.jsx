@@ -5,6 +5,9 @@ import Editor from '@monaco-editor/react'
 
 axios.defaults.baseURL = 'https://codeditor-api.onrender.com'
 
+const defaultPython = 'print(f"Hello, World!")'
+const defaultCpp = '#include <iostream>\n#include <string>\n\nint main() {\n    std::cout << "Hello, World!" << std::endl;\n    return 0;\n}'
+
 export default function App() {
   const [token, setToken] = useState(localStorage.getItem('token'))
   const [isLogin, setIsLogin] = useState(true)
@@ -16,9 +19,14 @@ export default function App() {
   const [resetToken, setResetToken] = useState(null)
   const [resetMessage, setResetMessage] = useState('')
 
-  const [language, setLanguage] = useState('python')
-  const [code, setCode] = useState('name = input("Enter name: ")\nprint(f"Hello, {name}!")')
-  const [stdin, setStdin] = useState('')
+  const [language, setLanguage] = useState(localStorage.getItem('codeditoR') || 'python')
+  
+  const [code, setCode] = useState(() => {
+    const initialLang = localStorage.getItem('codeditoR') || 'python'
+    const savedCode = localStorage.getItem(`codeditoR-${initialLang}`)
+    return savedCode || (initialLang === 'python' ? defaultPython : defaultCpp)
+  })
+  const [stdin, setStdin] = useState(localStorage.getItem('codeditoR') || '')
   const [output, setOutput] = useState('')
   const [isExecuting, setIsExecuting] = useState(false)
 
@@ -31,6 +39,31 @@ export default function App() {
       window.history.replaceState({}, document.title, "/")
     }
   }, [])
+
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      const isCmdOrCtrl = e.ctrlKey || e.metaKey
+
+      if (isCmdOrCtrl && e.key === 'Enter') {
+        e.preventDefault()
+        handleRunCode()
+      }
+
+      if (isCmdOrCtrl && e.key === 's') {
+        e.preventDefault() 
+        
+        localStorage.setItem(`codeditor-code-${language}`, code)
+        localStorage.setItem('codeditor-stdin', stdin)
+        localStorage.setItem('codeditor-lang', language)
+        
+        setOutput((prev) => `[System] Workspace saved locally at ${new Date().toLocaleTimeString()}\n\n` + prev)
+      }
+    }
+
+    window.addEventListener('keydown', handleKeyDown)
+    
+    return () => window.removeEventListener('keydown', handleKeyDown)
+  }, [code, language, stdin]) 
 
   const handleAuth = async (e) => {
     e.preventDefault()
@@ -88,13 +121,16 @@ export default function App() {
 
   const handleLanguageChange = (e) => {
     const newLang = e.target.value
-    setLanguage(newLang)
     
-    if (newLang === 'python') {
-      setCode('name = input("Enter name: ")\nprint(f"Hello, {name}!")')
-    } else if (newLang === 'cpp') {
-      setCode('#include <iostream>\n#include <string>\n\nint main() {\n    std::string name;\n    std::cout << "Enter name: ";\n    std::cin >> name;\n    std::cout << "Hello, " << name << "!" << std::endl;\n    return 0;\n}')
-    }
+    localStorage.setItem(`codeditor-${language}`, code)
+
+    setLanguage(newLang)
+    localStorage.setItem('codeditoR', newLang)
+
+    const savedCode = localStorage.getItem(`codeditor-${newLang}`)
+    
+    if (savedCode) setCode(savedCode)
+    else setCode(newLang === 'python' ? defaultPython : defaultCpp)
   }
 
   const handleRunCode = async () => {
