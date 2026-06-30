@@ -43,6 +43,7 @@ export default function App() {
   const handleLogout = () => {
     localStorage.removeItem('token')
     setToken(null)
+    setOutput('')
   }
 
   const handleLanguageChange = (e) => {
@@ -107,7 +108,8 @@ export default function App() {
             </button>
             <button 
               onClick={handleLogout}
-              className="text-gray-400 hover:text-white transition flex items-center gap-2"
+              className="text-zinc-500 hover:text-red-400 transition-colors"
+              title="Sign Out"
             >
               <LogOut size={18} />
             </button>
