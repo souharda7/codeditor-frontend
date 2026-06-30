@@ -19,14 +19,14 @@ export default function App() {
   const [resetToken, setResetToken] = useState(null)
   const [resetMessage, setResetMessage] = useState('')
 
-  const [language, setLanguage] = useState(localStorage.getItem('codeditoR') || 'python')
+  const [language, setLanguage] = useState(localStorage.getItem('codeditor-lang') || 'python')
   
   const [code, setCode] = useState(() => {
-    const initialLang = localStorage.getItem('codeditoR') || 'python'
-    const savedCode = localStorage.getItem(`codeditoR-${initialLang}`)
+    const initialLang = localStorage.getItem('codeditor-lang') || 'python'
+    const savedCode = localStorage.getItem(`codeditor-code-${initialLang}`)
     return savedCode || (initialLang === 'python' ? defaultPython : defaultCpp)
   })
-  const [stdin, setStdin] = useState(localStorage.getItem('codeditoR') || '')
+  const [stdin, setStdin] = useState(localStorage.getItem('codeditor-stdin') || '')
   const [output, setOutput] = useState('')
   const [isExecuting, setIsExecuting] = useState(false)
 
@@ -122,12 +122,12 @@ export default function App() {
   const handleLanguageChange = (e) => {
     const newLang = e.target.value
     
-    localStorage.setItem(`codeditor-${language}`, code)
+    localStorage.setItem(`codeditor-code-${language}`, code)
 
     setLanguage(newLang)
-    localStorage.setItem('codeditoR', newLang)
+    localStorage.setItem('codeditor-lang', newLang)
 
-    const savedCode = localStorage.getItem(`codeditor-${newLang}`)
+    const savedCode = localStorage.getItem(`codeditor-code-${newLang}`)
     
     if (savedCode) setCode(savedCode)
     else setCode(newLang === 'python' ? defaultPython : defaultCpp)
